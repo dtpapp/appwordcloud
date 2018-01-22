@@ -15,5 +15,5 @@ Funcoes:
 Script comentado para confeccao das figuras:
  - gerarando nuvem de palavras.R
  
-Comando que geraram o aplicativo hospedado em : https://dataprevapp.shinyapps.io/wordcloud/
+Arquivo Rmd que gerou o aplicativo hospedado em : https://dataprevapp.shinyapps.io/wordcloud/
  - Aplicativo_nuvem_de_palavras.Rmd
