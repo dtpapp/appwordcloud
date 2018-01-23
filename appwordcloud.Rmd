@@ -257,8 +257,8 @@ ui <- fluidPage(
       # Input: Checkbox if file has header ----
       checkboxInput("header", "Marque se a base possuir cabeçalho", TRUE),
       checkboxInput("cor", "Marque se deseja usar cor para sentimentos", TRUE),
-      checkboxInput("tf_idf", "Marque se deseja usar a transformação tf-idf", F),
-      checkboxInput("textStemming", "Marque se deseja usar 'Text Steamming' (remover sufixos)", F)
+      checkboxInput("textStemming", "Marque se deseja usar 'Text Steamming' (remover sufixos)", F),
+      checkboxInput("tf_idf", "Marque se deseja usar a transformação tf-idf", F)
   #,downloadButton("downloadPlot", "Download")
     ),
     
@@ -414,3 +414,7 @@ Na opção "**Marque se deseja usar cor para sentimentos**" a cor da nuvem é ba
 
 
 [Codigo no github](https://github.com/Dataprevapp/wordcloud)
+
+**Importante**: Para utilizar a transformação tf-idf em conjunto com a remoção de sufixos, o procedimento deve ser feito na ordem: 
+
+    Text Stemming > tf-idf
