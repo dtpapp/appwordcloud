@@ -6,7 +6,7 @@ Esta paste conta com os seguintes arquivos:
 
 Base de dados:
  - social-searcher(23) meu inss.csv    - base obtida através do [social searcher](social-searcher.com)
- - base.csv                            - exemplo de base de dados para entrar no aplicativo (obs.: codificação UTF-8)  
+ - base.csv                            - exemplo de base de dados como input do aplicativo (obs.: codificação UTF-8)  
 
 Funcoes auxiliares:
  - catch_error.R
@@ -16,7 +16,7 @@ Funcoes auxiliares:
  - frequencia.R
 
 Script da i-ésima versão de funcionalidades do aplicativo: 
- - Aplicativo_nuvem_de_palavras_vi.Rmd - 
+ - Aplicativo_nuvem_de_palavras_vi.Rmd 
   
 Código do aplicativo:
  - appwordcloud.Rmd
