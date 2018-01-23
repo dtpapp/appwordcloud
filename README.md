@@ -1,4 +1,6 @@
-# Wordcloud
+# Aplicatido para construir Wordcloud
+
+![](https://github.com/Dataprevapp/appwordcloud/blob/master/fig1.png?raw=true)
 
 Link do aplicativo:  https://dataprevapp.shinyapps.io/appwordcloud/
 
