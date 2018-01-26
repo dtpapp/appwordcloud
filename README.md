@@ -1,4 +1,6 @@
-# Aplicatido para construir Wordcloud
+# Aplicativo para construir Wordcloud
+
+Crie sua própria wordcloud!
 
 ![](https://github.com/Dataprevapp/appwordcloud/blob/master/fig1.png?raw=true)
 
@@ -19,6 +21,9 @@ Funcoes auxiliares:
 
 Script da i-ésima versão de funcionalidades do aplicativo: 
  - Aplicativo_nuvem_de_palavras_vi.Rmd 
+ 
+Script com alguns exemlos de uso da funcao "wordcloud_sentiment.R"
+ - gerarando nuvem de palavras.R 
   
 Código do aplicativo:
  - appwordcloud.Rmd
