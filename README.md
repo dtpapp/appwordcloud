@@ -4,7 +4,7 @@ Crie sua própria wordcloud!
 
 ![](https://github.com/Dataprevapp/appwordcloud/blob/master/fig1.png?raw=true)
 
-Link do aplicativo:  https://dataprevapp.shinyapps.io/appwordcloud/
+Link do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud
 
 Esta paste conta com os seguintes arquivos:
 
