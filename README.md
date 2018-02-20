@@ -16,6 +16,18 @@ Crie sua própria wordcloud!
 
 Link do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud
 
+Esta paste conta com os seguintes arquivos:
+
+Base de dados:
+ - social-searcher(23) meu inss.csv    - base obtida através do [social searcher](https://www.social-searcher.com/)
+ - base.csv                            - exemplo de base de dados como input do aplicativo (obs.: codificação UTF-8)  
+
+Funcão:
+ - wordcloud_sentiment.R
+  
+Código do aplicativo:
+ - appwordcloud.Rmd
+
 # Motivação para o aplicativo
 
 Inicialmente uma função foi desenvolvida com finalidade de se criar nuvens de palavras em conjunto com técnicas de textmining de forma dinâmica, o nome da função é `wordcloud_sentiment()` e seu código e os parâmetros para seu uso podem ser conferidos no arquivo `wordcloud_sentiment.R`.
