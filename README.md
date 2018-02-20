@@ -99,13 +99,6 @@ A implementação do aplicativo para wordcloud iniciou-se a partir do [exemplo b
 
 A partir deste exemplo em conjunto com outras funcionalidades disponíveis na [galeria](https://shiny.rstudio.com/gallery/) e na [Documentacao de funçoes em Shiny](https://shiny.rstudio.com/reference/shiny/1.0.5/) foram implementadas de forma que o usuário pudesse interagir e modificar a nuvem utilizando algumas funcionalidades de textmining.
 
-O aplicativo é exibido da seguinte maneira:
-
-![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny4.png?raw=true)
-
-Para conferir o código do aplicativo comentado passo a passo, abrir o arquivo `appwordcloud.Rmd`.
-
-
 # Fontes para aprender a criar apps Shiny
 
 Além do [tutorial do Rstudio no Github oficial sobre shiny (em ingles)](http://rstudio.github.io/shiny/tutorial/), existem outras opções como referencias para se aprender a implementação de aplicativos html via Shiny, como o [curso na datacamp - Building Web Applications in R with Shiny - free course (em ingles)](https://www.datacamp.com/courses/building-web-applications-in-r-with-shiny) e a página no [curso-R](http://material.curso-r.com/shiny/) que explica seu framework.
