@@ -12,7 +12,7 @@ output:
 
 Apesar de se tratar de um aplicativo shiny, seu layout foi todo configurado com o auxílio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/) que possibilita uma boa apresentação. 
 
-![[Imagem do site oficial](https://rmarkdown.rstudio.com/flexdashboard/) ](img\\shiny1.png)
+![[Imagem do site oficial](https://rmarkdown.rstudio.com/flexdashboard/) ](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny1.png?raw=true)
 
 No  [manual do pacote](https://rmarkdown.rstudio.com/flexdashboard/)  é possível encontrar varias configurações de layout para o dashboad bem como uma [sessão que fala sobre incluir aplicativos Shiny no flexdashbard](https://rmarkdown.rstudio.com/flexdashboard/shiny.html) 
 
@@ -45,7 +45,7 @@ O projeto [Shiny](https://shiny.rstudio.com/) é um framework para aplicações 
 Ao incluir a opção `runtime: shiny ` no cabeçalho é possível [executar aplicativos shiny no dashboard](https://rmarkdown.rstudio.com/flexdashboard/shiny.html) de forma que se torne interativo.
 
 
-<center>![](img\\shiny2.png)
+<center>![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny2.png?raw=true)
 
 Permite que o usuário do R crie apps web utilizando somente a própria linguagem R diminuindo a sobrecarga do usuário de forma que possa desenvolver e rodar suas aplicações localmente de formas muito simples como por exemplo os comandos`runAPP("myapp")`, `shinyApp(ui, server)` ou ainda `runApp(list(ui, server))`.
 
@@ -87,13 +87,13 @@ Na página oficial da [Shiny do Rstudio](https://shiny.rstudio.com/) é possíve
 
 A implementação do aplicativo para wordcloud iniciou-se a partir do [exemplo básico de nuvem de palavras](https://shiny.rstudio.com/gallery/word-cloud.html) apresentado no site, veja:
 
-![](img\\shiny3.png)
+![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny3.png?raw=true)
 
 A partir deste exemplo em conjunto com outras funcionalidades disponíveis na [galeria](https://shiny.rstudio.com/gallery/) e na [Documentacao de funçoes em Shiny](https://shiny.rstudio.com/reference/shiny/1.0.5/) foram implementadas de forma que o usuário pudesse interagir e modificar a nuvem utilizando algumas funcionalidades de textmining.
 
 O aplicativo é exibido da seguinte maneira:
 
-![](img\\shiny4.png)
+![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny4.png?raw=true)
 
 Para conferir o código do aplicativo comentado passo a passo, abrir o arquivo `appwordcloud.Rmd`.
 
@@ -119,7 +119,7 @@ Diversos links como o Shiny User Showcase, que contém um conjunto inspirador de
 
 A página [https://www.shinyapps.io/](https://www.shinyapps.io/) possibilita implementar suas aplicações Shiny na Web em alguns minutos, não precisando de um servidor próprio ou saber como configurar um firewall para gerenciar seu aplicativo na nuvem
 
-![[Imagem do site oficial](https://www.shinyapps.io/)](img\\shiny5.png)
+![[Imagem do site oficial](https://www.shinyapps.io/)](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny5.png?raw=true)
 
 Após criar uma conta, basta instalar o pacote, obter o seu token eno site e sincronizar o R com a [shinyapps.io](https://www.shinyapps.io/) com os seguintes comandos:
 
