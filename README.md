@@ -22,8 +22,9 @@ Base de dados:
  - social-searcher(23) meu inss.csv    - base obtida através do [social searcher](https://www.social-searcher.com/)
  - base.csv                            - exemplo de base de dados como input do aplicativo (obs.: codificação UTF-8)  
 
-Funcão:
- - wordcloud_sentiment.R
+Complementos:
+ - wordcloud_sentiment.R - Função criada para gerar nuvens de palavras com tecnicas textmining de maneira simples e facil
+ - install_packages.R - Script para auxiliar na instalação dos pacotes necessários para rodar o aplicativo
   
 Código do aplicativo:
  - appwordcloud.Rmd
