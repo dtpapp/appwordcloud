@@ -1,126 +1,112 @@
 ---
 title: "Crie sua própria Word Cloud"
 output: 
-  flexdashboard::flex_dashboard:
-runtime: shiny 
+  flexdashboard::flex_dashboard
+runtime: shiny
+options(shiny.sanitize.errors = FALSE)
 ---
 
 
 
 ```{r global setup, include=FALSE}
-library(flexdashboard)
-
-suppressMessages(library(stringr))   #Pacote para manipulação de strings
-suppressMessages(library(dplyr))     #Pacote para manipulação de dados
-suppressMessages(require(tm))        #Pacote de para text mining
-
-
-# Desligado:
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                      Importanto pacotes utilizados no aplicativo                             +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+library(flexdashboard) #Pacote responsavel por gerar o aplicativo como dashboard
+library(stringr)       #Pacote para manipulação de strings
+library(dplyr)         #Pacote para manipulação de dados
+require(tm)            #Pacote de para text mining
+require(wordcloud)     #Pacote para nuvem de palavras
+require(readxl)        #Pacote para leitura de dados excel
+library(tidytext)      #Manipulação de textos
+library(reshape2)      #Manipulação de dados
+library(lexiconPT)     #Importar palavras de sentimentos
+library(memoise)       #Cache resultados de uma função
+library(SnowballC)     #Para steamming
+library(purrr)         #Ferramentas de programação funcional
+library(DT)            #Renderizar tabela da segunda pagina
+library(ngram)         #Busca por sequencias de palavras  
+#+--------------------------------------+---------------------------------------------+  
+#Pacotes desativados:   (Nessa nova versao o RWeka nao sera mais utilizado)
 # library(rJava)
 # library(RWeka)
+#-----------------------------------------------------------------------------------------------
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                  Importando fontes nativas do windows para as letras                         +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+windowsFonts(
+  A=windowsFont("Arial Black"),
+  B=windowsFont("Bookman Old Style"),
+  C=windowsFont("Comic Sans MS"),
+  D=windowsFont("Symbol")
+)
+#-----------------------------------------------------------------------------------------------
 
 
-
-suppressMessages(require(wordcloud)) #Pacote para nuvem de palavras
-suppressMessages(require(readxl))    #Pacote para leitura de dados excel
-suppressMessages(library(tidytext))  #Manipulação de textos
-suppressMessages(library(reshape2))  #Manipulação de dados
-suppressMessages(library(lexiconPT)) #Importar palavras de sentimentos
-library(memoise)
-library(SnowballC)
-library(purrr)
-library(stringr)
-
-#++++++++++++++++++++++++++++++++++
-# Captação de erros de codificacao:
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                         Captação de erros de codificacao:                                    +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 catch.error = function(x){
-  # let us create a missing value for test purpose
-  y = NA
-  # Try to catch that error (NA) we just created
-  catch_error = tryCatch(tolower(x), error=function(e) e)
-  # if not an error
-  if (!inherits(catch_error, "error"))
-    y = tolower(x)
-  # check result if error exists, otherwise the function works fine.
+  y = NA                                                     # Cria um vetor com valor faltante para teste
+  catch_error = tryCatch(tolower(x), error=function(e) e)    # Tente pegar esse erro (NA) que acabamos de criar
+  if (!inherits(catch_error, "error"))                       # Se não for um erro
+    y = tolower(x)                                           # verificar resultado se houver erro, caso contrário, a função funciona normalmente
   return(y)
 }
-#++++++++++++++++++++++++++++++++++
-#++++++++++++++++++++++++++++++++++
-# Limpeza de caracteres especiais
+#Fonte: https://sites.google.com/site/miningtwitter/questions/talking-about/given-topic
+#-----------------------------------------------------------------------------------------------
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                            Limpeza de caracteres especiais                                   +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 cleanTweets<- function(tweet){
   
-  # Clean the tweet for sentiment analysis
+  # Limpe o tweet para análise de sentimentos
   
-  # remove html links
+  tweet = gsub("(f|ht)(tp)(s?)(://)(.*)[.|/](.*)", " ", tweet)  # Remove html links
+  tweet = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", " ", tweet)       # Remove retweet 
+  tweet = gsub("#\\w+", " ", tweet)                             # Remove todos "#Hashtag"
+  tweet = gsub("@\\w+", " ", tweet)                             # Remove todos "@people"
+  tweet = gsub("[[:punct:]]", " ", tweet)                       # Remove todas as pontuacoes
+  tweet = gsub("[[:digit:]]", " ", tweet)                       # Remover numeros, precisamos apenas de texto para análise
   
-  tweet = gsub("(f|ht)(tp)(s?)(://)(.*)[.|/](.*)", " ", tweet)
+  tweet = gsub("[ \t]{2,}", " ", tweet)                         # Remove espaços desnecessarios
+  tweet = gsub("^\\s+|\\s+$", "", tweet)                        # (espacos em branco, tabs etc)
   
-  # Remove retweet entities
-  
-  tweet = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", " ", tweet)
-  
-  # Remove all "#Hashtag"
-  
-  tweet = gsub("#\\w+", " ", tweet)
-  
-  # Remove all "@people"
-  
-  tweet = gsub("@\\w+", " ", tweet)
-  
-  # Remove all the punctuation
-  
-  tweet = gsub("[[:punct:]]", " ", tweet)
-  
-  # Remove numbers, we need only text for analytics
-  
-  tweet = gsub("[[:digit:]]", " ", tweet)
-  
-  # Remove unnecessary spaces (white spaces, tabs etc)
-  tweet = gsub("[ \t]{2,}", " ", tweet)
-  tweet = gsub("^\\s+|\\s+$", "", tweet)
-  
-  tweet = gsub('https://','',tweet) # removes https://
-  tweet = gsub('http://','',tweet) # removes http://
-  tweet=gsub('[^[:graph:]]', ' ',tweet) ## removes graphic characters 
-  #like emoticons 
-  tweet = gsub('[[:punct:]]', '', tweet) # removes punctuation 
-  tweet = gsub('[[:cntrl:]]', '', tweet) # removes control characters
-  tweet = gsub('\\d+', '', tweet) # removes numbers
-  tweet=str_replace_all(tweet,"[^[:graph:]]", " ")
-  #tweet=SnowballC::wordStem(tweet,language = "portuguese")
-  
-  
-  #Convert all text to lowercase
-  tweet = catch.error(tweet)
+  tweet = gsub('https://','',tweet)                             # Remove https://
+  tweet = gsub('http://','',tweet)                              # Remove http://
+  tweet = gsub('[^[:graph:]]', ' ',tweet)                       # Remove strings gráficos como emoticons
+  tweet = gsub('[[:punct:]]', '', tweet)                        # Remove pontuacao 
+  tweet = gsub('[[:cntrl:]]', '', tweet)                        # Remove strings de controle
+  tweet = gsub('\\d+', '', tweet)                               # Remove numeros
+  tweet=str_replace_all(tweet,"[^[:graph:]]", " ")              # Remove strings gráficos como emoticons
+  #tweet=SnowballC::wordStem(tweet,language = "portuguese")     # Aplica steamming (desativado) 
+
+  #Converte tudo para minusculo 
+  tweet = catch.error(tweet)                                    # Aplica a funcao catch.error 
   
   return(tweet)
 }
-#++++++++++++++++++++++++++++++++++
-#++++++++++++++++++++++++++++++++++
-# Remover NAs
-cleanTweetsAndRemoveNAs<- function(Tweets) {
-  
-  TweetsCleaned = sapply(Tweets, cleanTweets)
-  
-  # Remove the "NA" tweets from this tweet list
-  TweetsCleaned = TweetsCleaned[!is.na(TweetsCleaned)]
-  
-  names(TweetsCleaned) = NULL
-  # Remove the repetitive tweets from this tweet list
-  
-  TweetsCleaned = unique(TweetsCleaned)
-  
-  TweetsCleaned
-}
-#++++++++++++++++++++++++++++++++++
+#Ref: https://sites.google.com/site/miningtwitter/questions/talking-about/wordclouds/comparison-cloud
+#-----------------------------------------------------------------------------------------------
 
-# Using "memoise" to automatically cache the results
-getTermMatrix <- memoise(function(x,excludeWords,ngrams=1,tf_idf=F,textStemming=F) {
-
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+     Funcao Global para tratamento dos dados utilizados em ambas as guias do aplicativo       +
+#+                  Fonte: https://shiny.rstudio.com/gallery/word-cloud.html                    +
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+getTermMatrix <- memoise(function(x,                          # Usando "memoise" para armazenar automaticamente os resultados
+                                  excludeWords,               # Palavras que sera excluidas
+                                  ngrams=1,                   # Ordem da sequencia de palavras
+                                  tf_idf=F,                   # Transformacao tf-idf
+                                  textStemming=F) {           # Transformacao Steamming
+  #Leitura da coluna de texto informada:
   text <- x
+  text=as.data.frame(text)
   
-  
-
+  #Funcao para remover acentuacao:
+  #-----------------------------------------------------------------------------------------------
   rm_accent <- function(str,pattern="all") {
   # Rotinas e funções úteis V 1.0
   # rm.accent - REMOVE ACENTOS DE PALAVRAS
@@ -167,51 +153,87 @@ getTermMatrix <- memoise(function(x,excludeWords,ngrams=1,tf_idf=F,textStemming=
   
   return(str)
   }
+  #Font: https://pt.stackoverflow.com/questions/46473/remover-acentos
+  text=apply(text,1,rm_accent)                               #Aplica no objeto "text, por linha, a funcao definida acima
+  #-----------------------------------------------------------------------------------------------
   
-  text=rm_accent(text)
+  #Criando corpus:
+  text=data.frame(doc_id=1:length(text),                     #Criando o data.frame para criar o corpus
+                       text=text)
+  myCorpus = Corpus(DataframeSource(as.data.frame(text)))    #Criando o corpus a partir de um data.frame
   
-
-
-  myCorpus = Corpus(DataframeSource(as.data.frame(text)))
-  if(textStemming) myCorpus <- Corpus(VectorSource(text))  #Para stemming
-
-  # Convert the text to lower case
+  # if(textStemming) myCorpus <- Corpus(VectorSource(text))  #Para stemming (Com atualizacao do pacote tm nao eh mais necessario) 
+  
+  
+  #Tratamento do corpus:
   myCorpus=myCorpus%>%
-    tm_map(content_transformer(tolower))%>%
-    tm_map(removeNumbers)%>%
-    tm_map(removeWords, stopwords("portuguese"))%>%
-    tm_map(removePunctuation)%>%
-    tm_map(stripWhitespace)%>%
-    tm_map(removeWords, excludeWords) 
+    tm_map(content_transformer(tolower))%>%                  # Converte para minusculo
+    tm_map(removeNumbers)%>%                                 # Remove numeros do corpus
+    tm_map(removeWords, stopwords("portuguese"))%>%          # Remove stopwords do dicionario portgues
+    tm_map(removePunctuation)%>%                             # Remove pontuacao
+    tm_map(stripWhitespace)%>%                               # Remove excessos de espacos em branco
+    tm_map(removeWords, excludeWords)                        # Exclue palavras adicionais  
   
-    if(textStemming) myCorpus <- tm_map(myCorpus, stemDocument,language="portuguese")
+  #Realiza o steamming se textStemming==V
+  if(textStemming) myCorpus <- tm_map(myCorpus, stemDocument,language="portuguese")
   
   
-  
-  
-  myDTM = TermDocumentMatrix(myCorpus,
-              control = list(minWordLength = 1))
+  #Agora sera feita a procura por sequencias de palavras se ngrams for diferente de 1:
 
+#Abordagem com RWeka (Off)--------------------------------------------------------------------
+    # Abordagem antiga utilizava o pacote RWeka, esse pacote nao sera mais utilizado
+    # Tokenizer <- function(x) NGramTokenizer(x, Weka_control(min = ngrams, max = ngrams))
+    # myDTM = TermDocumentMatrix(myCorpus,control = list(tokenize = Tokenizer))
+#---------------------------------------------------------------------------------------------
   
-    #Se Ngram=True:
+  # Se ngrams for difernte de 1:
   if(ngrams!=1){
-    Tokenizer <- function(x) NGramTokenizer(x, Weka_control(min = ngrams, max = ngrams))
-    myDTM = TermDocumentMatrix(myCorpus,control = list(tokenize = Tokenizer))
+    temp=ngram::ngram(ngram::concatenate(myCorpus),ngrams)      # Objeto temporario recebe objeto que guarda sequencias
+    temp=get.phrasetable(temp)                                  # Obtendo tabela de sequencias do objeto acima
+    
+    temp$ngrams=temp$ngrams%>%                                  # Limpeza das sequencias obtidas:
+      str_replace_all(pattern = "^([A-Za-z] [A-Za-z])+","")%>%  # Remover sequencias de apenas 1 letras 
+      str_replace_all(pattern = "[:punct:]","")%>%              # Remover caracteres especiais
+      str_replace_all(pattern = "\n","")%>%                     # Remover o marcador de "nova linha"
+      str_trim()                                                # Remover espaços em branco sobrando
+    
+    #Apos a limpeza..
+    
+    temp=temp[temp$ngrams!="",]                                 # Selecionando apenas as linhas que contenham informacao
+    
+    temp=temp%>%                                                # Novamente manipulando o objeto que contem a tabela de sequencias
+      group_by(ngrams) %>%                                      # Agrupando por "ngrams" (sequencias obtidas)
+      summarise(freq=sum(freq))%>%                              # Resumir as linhas repetidas pela soma das frequencias
+      arrange(desc(freq))%>%                                    # Organizando da maior para a menos frequencia
+      as.matrix()                                               # Alterando o tipo de objeto para matrix
+    
+    rownames(temp)=str_c(temp[,1])                              # O nome das linhas passa a ser a sequencia correspondente
+    sort(temp[,2],decreasing = T)                               # Retorna um objeto com as frequencias em ordem decrescente e linhas nomeadas
+    
+  # Caso contrario, se ngrams for igual a 1 (sem sequencias)      
+  }else{
+  
+  myDTM = TermDocumentMatrix(myCorpus,                          # Obtendo matriz de termos:
+              control = list(minWordLength = 1))                # Com no minimo 1 ocorrencia
+  
+  #Se se ngrams for igual a 1 (sem sequencias) e tf.idf for verdadeiro:
+      if(tf_idf==T){
+        myDTM=weightTfIdf(myDTM,normalize=T)            # Realiza transformacao tf-idf
+      }
+   
+  m = as.matrix(myDTM)                        # Transforma o objeto em matrix
+  sort(rowSums(m),decreasing=TRUE)            # Retorna um objeto com as frequencias em ordem decrescente e linhas nomeadas
+  
   }
   
-      #Se tf.idf for verdadeiro:
-  if(tf_idf==T){
-    myDTM=weightTfIdf(myDTM,normalize=T)
-  }
-  
-  m = as.matrix(myDTM)
- sort(rowSums(m),decreasing=TRUE)
+
   
 })
 
 ```
 
-
+Criar Wordcloud
+=====================================  
 
 Column
 --------------------------------------
@@ -220,168 +242,227 @@ Column
 
 
 ```{r}
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+                         Criando o shinyApp(ui, server)                                       +
+#+                                                                                              +
+#+ Para aplicativos definidos dessa maneira, o arquivo server.R deve retornar a função do       +
+#+ servidor e o arquivo ui.R deve retornar o objeto UI (neste caso, o objeto UI é criado por    +
+#+ fluidPage ()). Mais info: https://shiny.rstudio.com/articles/app-formats.html                +    
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-ui <- fluidPage(
-  # Application title
-  titlePanel("Word Cloud"),
+# UI --------------------------------------------------------------------------------------------
+ui <- fluidPage(                                                      # Funções para criar layouts de páginas "fluidos".
+  
+  titlePanel("Word Cloud"),                                           # Titulo do aplicativo
+  sidebarLayout(                                                      # SidebarPanel contendo controles de entrada
+    sidebarPanel(                                                     # sidebarPanel contem os inputs e o mainPanel contém outputs
 
-  sidebarLayout(
-    # Sidebar with a slider and selection inputs
-    sidebarPanel(
-
-      # Input: Select separator ----
-      radioButtons("sep", "Separador",
-                   choices = c(Comma = ",",
-                               Semicolon = ";",
-                               Tab = "\t"),
-                   selected = ","),
-      fileInput("file1", "Escolha o arquivo no formato CSV",
-                multiple = TRUE,
-                accept = c("text/csv",
+      
+      radioButtons("sep", "Separador",                                # Input: Selecionar um item de uma lista
+                   choices = c(Comma = ",",Semicolon = ";",           # Opcoes de separadores do input em formato csv
+                               Tab = "\t"),selected = ","),
+      
+      fileInput("file1", "Escolha o arquivo no formato CSV",          # Input: Selecionar um arquivo csv do computador 
+                multiple = TRUE,                                      # Permite carregar mais de um arquivo
+                accept = c("text/csv",                                # Tipos de arquivos aceitos
                          "text/comma-separated-values,text/plain",
                          ".csv")),
-      actionButton("update", "Atualizar nuvem"),
-      # Copy the line below to make a text input box
-  textInput("text", label = h3("Removendo palavras"), value = "inserir stopwords de acordo com instrução"),
-      hr(),
-      sliderInput("freq",
-                  "Frequência minima:",
-                  min = 1,  max = 50, value = 15),
+      
+      actionButton("update", "Atualizar nuvem"),                      # Preciona para recarregar a nuvem
+      
+      
+      textInput("text", label = h3("Removendo palavras"),             # Input: Insere strings que considerados stopwords
+            value = "inserir stopwords de acordo com instrução"),
+      hr(),                                                           # Linha horizontal
+
+#Opcoes para o layout da wordcloud :
+      sliderInput("freq",                                             # Input: Deslize para selecionar algum valor no intervalo
+                  "Frequência minima:",                               # Titulo
+                  min = 1,  max = 100, value = 15),                   # Valor minimo, maximo e default
       sliderInput("max",
                   "Número máximo de palavras na nuvem:",
                   min = 1,  max = 300,  value = 100),
-  #ngrams: (desligado)
-      # sliderInput("ngrams",
-      #             "Número de sequências de palavras",
-      #             min = 0,  max = 5,  value = 1),
-      # Input: Checkbox if file has header ----
-      checkboxInput("header", "Marque se a base possuir cabeçalho", TRUE),
-      checkboxInput("cor", "Marque se deseja usar cor para sentimentos", TRUE),
-      checkboxInput("textStemming", "Marque se deseja usar 'Text Steamming' (remover sufixos)", F),
+      sliderInput("horizontal",                                       # Posicao das palavras
+                "Porcentagem de palavras na horizontal:",
+                min = 0,  max = 1, value = 0.65),
+      sliderInput("ngrams",
+              "Número de sequências de palavras",
+                  min = 1,  max = 5,  value = 1),
+      hr(),                                                           # Linha horizontal
+#Opcoes para analise da wordcloud :
+      checkboxInput("header", "Marque se a base possuir cabeçalho", TRUE),              # Cabecalho
+      checkboxInput("cor", "Marque se deseja usar cor para sentimentos", TRUE),         # Cor neutra ou com base em sentimentos
+      checkboxInput("textStemming",                                                     # Steamming
+                    "Marque se deseja usar 'Text Steamming' (remover sufixos)", F),     # tf-idf
       checkboxInput("tf_idf", "Marque se deseja usar a transformação tf-idf", F)
-  #,downloadButton("downloadPlot", "Download")
     ),
     
 
-    # Show Word Cloud
-    mainPanel(
-      plotOutput("plot")
+# Para exibir a nuvem :
+    mainPanel(                                                        # mainPanel contém outputs e o sidebarPanel contem os inputs 
+      plotOutput("plot"),                                             #"plot" = "output$plot <- renderPlot({  (...) })"
+	  dataTableOutput("table"),                                         #"table" = "output$table <- renderDataTable({ (...) })"
+      tags$br(),                                                      # Espaço em branco
+      tags$br(),                                                      # Espaço em branco
+      downloadButton("downloadtable", "Download the table"),          # downloadtable = "output$downloadtable <- downloadHandler( ... )"
+      tags$br(),                                                      # Espaço em branco
+      tags$hr()                                                             # Linha horizontal
     )
   )
 )
 
-server <- function(input, output, session) {
-  # Define a reactive expression for the document term matrix
-  terms <- reactive({
+# SERVER ---------------------------------------------------------------------------------------
+
+server <- function(input, output, session) {                # Funcao do servidor que recebe o imput$ e retorna o output$              
+  
+  terms <- reactive({                                       # Definir uma expressão reativa para o do documento
 
     
-    df <- read.csv(input$file1$datapath,
+    df <- read.csv(input$file1$datapath,                    # Leitura da base de dados com os inputs obtidos em ui
              header = input$header,
              sep = input$sep,encoding = "UTF-8")
     
-    names(df)=c("V1","V2")
-    
-    #Remover linhas duplicadas:
-    df=df%>%
-      distinct(V2,V1,keep_all=T)
-    
-    df=df[,2]
-
-df=apply(data.frame(df),1,cleanTweets)
+# Removendo linhas duplicadas:
+    names(df)=c("V1","V2")                                  # Altera o nome das variaveis da base lida
+    df=df%>%                                                # Alterando o objeto lido
+      distinct(V2,V1,keep_all=T)                            # Remove linhas iguais de acordo com o texto em seguida o usuario iguais
+    df=df[,2]                                               # Seleciona a coluna do texto
+    df=apply(data.frame(df),1,cleanTweets)                  # Aplica a funcao cleanTweets
 
     
-    # Change when the "update" button is pressed...
+    
+# Altera quando o botao "update" for precionado:
     input$update
-        # ...but not for anything else
-    isolate({
-      withProgress({
-        setProgress(message = "Processing corpus...")
-        excludeWords=input$text
-        # ngrams=input$ngrams
-        ngrams=1
-        tf_idf=input$tf_idf
-        textStemming=input$textStemming
-        excludeWords=as.vector(str_split(excludeWords, fixed(','))[[1]])
-        getTermMatrix(df,excludeWords,ngrams=ngrams,tf_idf=tf_idf,textStemming=textStemming)
+    isolate({                                               # Executa a expressão dada em um escopo em que os valores reativos ou a expressão podem ser lidos
+      withProgress({                                                       # Relata o progresso ao usuário durante operações de longa duração
+        setProgress(message = "Processando corpus...")                     # Mensagem de processamento
+        excludeWords=input$text                                            # Obtendo as stopwords separadas por virgula
+        excludeWords=as.vector(str_split(excludeWords, fixed(','))[[1]])   # Cria o vetor com as stopwords informadas
+        getTermMatrix(df,                                                  # Executa a funcao global getTermMatrix() responsavel por fazer o tratamento da base de dados
+                      excludeWords,
+                      ngrams=input$ngrams,
+                      tf_idf=input$tf_idf,
+                      textStemming=input$textStemming
+                      )
       })
     })
   })
 
-  # Make the wordcloud drawing predictable during a session
-  wordcloud_rep <- repeatable(wordcloud)
+# Faça o desenho do wordcloud previsível durante uma sessão
+  wordcloud_rep <- repeatable(wordcloud)                                 # Uma versão repetitiva da função que foi informada
 
-  output$plot <- renderPlot({
+#Exibir a tabela com as palavras da wordcloud previsivel durante uma sessao
+  datatable_rep <- repeatable(datatable)                                 #Uma versao repetitiva da função que foi informada
+
+    output$plot <- renderPlot({                                          # Gerando o output$plot usado em  mainPanel(plotOutput("plot")) no UI
+    v <- terms()                                                         # Obtendo o resultado da função global "getTermMatrix()"
+    set.seed(1234)                                                       # Semente para que a nuvem criada seja sempre a mesma
+    
+    d <- data.frame(words = names(v),freq=v)                             # Crie um data.frame com as strings e sua freqüência
+
+
+  output$table <- renderDataTable({                                      # Gerando o output$table usado em mainPanel(dataTableOutput("table"))
+
+    datatable_rep(d,rownames=F)                                          # Utilizando a versao repetitiva da função datatable
+    
+  })
+  
+#Incluindo a funcao que gera a base de dados que sera disponivel para download com o botao
+  output$downloadtable <- downloadHandler(                               # O output$downloadtable usado em  mainPanel(downloadButton("downloadtable")) no UI
+  filename = function() {
+    paste('stats', '.csv', sep='')
+  },
+  content = function(file) {
     v <- terms()
     set.seed(1234)
-    
-  d <- data.frame(words = names(v),freq=v)
+    df2 <- data.frame(words = names(v),freq=v)
 
-  sentiLex_lem_PT02 <- lexiconPT::sentiLex_lem_PT02
+    write.csv(df2, file,row.names = F)
+  }
+)
+# Fonte: https://stackoverflow.com/questions/45236368/how-to-use-the-download-button-in-shiny
+  
+   
+# Analise de sentimentos
+  if(input$cor){                                                         # Se a opcao de sentimentos estiver selecionada
+    
+      sentiLex_lem_PT02 <- lexiconPT::sentiLex_lem_PT02                  # Obtem o dicionario lexico em Portugues
       
-      #Selecionando as palavras (seus radicais) e sua polaridade
-      dicionary=data.frame(cbind(sentiLex_lem_PT02$term,sentiLex_lem_PT02$polarity))
-      matriz=d
-      #Arrumando nome das bases de dados2: (Colocar nomes iguais para words)
-      names(dicionary)=c("words", "sentiment")
-      names(matriz)=c("words", "freq")
+      dicionary=data.frame(cbind(sentiLex_lem_PT02$term,                 # Seleciona as palavras e 
+                                 sentiLex_lem_PT02$polarity))            # a polaridade de cada uma
       
-      #Transformando palavras em character:
-      dicionary$words=as.character(dicionary$words)
-      matriz$words=as.character(matriz$words)
+      matriz=d                                                           # Cria uma base temporaria para o join
       
-      if(input$textStemming){ dicionary$words <- wordStem(dicionary$words,language = "portuguese")}
+      names(dicionary)=c("words", "sentiment")                           # Alterando os nomes das colunas do dicionario e da base obtida
+      names(matriz)=c("words", "freq")                                   # (O nome deve ser o mesmo para o join)
+       
+      dicionary$words=as.character(dicionary$words)                      # Transformando as duas
+      matriz$words=as.character(matriz$words)                            # bases obtidas em strings
       
-      dicionary=dicionary[ dicionary$sentiment==1 | dicionary$sentiment==0 | dicionary$sentiment==-1, ]
-      table(dicionary$sentiment)
-      dicionary$sentiment=as.factor(dicionary$sentiment)
-      #Alterando o nome dos sentimentos:
+      
+      if(input$textStemming){                                            # Se textStemming estiver ligada
+        dicionary$words <- wordStem(dicionary$words,                     # Steamming o dicionario lexico tambem
+                                    language = "portuguese")             # De acordo com a lingua portuguesa
+        }
+      
+      dicionary=dicionary[ dicionary$sentiment==1 | dicionary$sentiment==0 | dicionary$sentiment==-1, ] # Obtendo so os polos -1, 1 e 0
+      dicionary$sentiment=as.factor(dicionary$sentiment)                # Transformando em fator
+      
+      #Alterando o nome dos fatores para o respectivo sentimento:
       levels(dicionary$sentiment)[levels(dicionary$sentiment)==-1]=c("Negativo")
       levels(dicionary$sentiment)[levels(dicionary$sentiment)==0]=c("Neutro")
       levels(dicionary$sentiment)[levels(dicionary$sentiment)==1]=c("Positivo")
       
-      #Join das palavras do documento com o dicionario ntivo do R
-      sentimentos=data.frame(matriz) %>%
-        left_join(data.frame(dicionary),by="words") %>%
-        select(words,sentiment,freq)%>%
-        distinct(words,.keep_all = T)
+      #Join das strings do documento com as strings nativas do pacote LexiconPT
+      sentimentos=data.frame(matriz) %>%                                # O objeto "sentimentos" recebe
+        left_join(data.frame(dicionary),by="words") %>%                 # left_join mantem todas as linhas da base matriz (esquerda) e busca por pares com o dicionario 
+        select(words,sentiment,freq)%>%                                 # Seleciona as colunas das strings, o sentimento e sua frequencia
+        distinct(words,.keep_all = T)                                   # Seleciona apenas linhas distintas
       
-      rownames(d)=d$words
-      #Neutro para palavras fora do dicionario
-      sentimentos$sentiment[is.na(sentimentos$sentiment)]="Neutro"
+      rownames(d)=d$words                                               # Nomeia as linhas do data.frame d   
+      
+      sentimentos$sentiment[is.na(sentimentos$sentiment)]="Neutro"      # Neutro para palavras fora do dicionario
       
       #Criando coluna de cores para cada sentimento
-      sentimentos$col=c(ifelse(sentimentos$sentiment=="Neutro","gray80",ifelse(sentimentos$sentiment=="Positivo","blue","red")))
-     
-       
-  if(input$cor){
-    wordcloud_rep(names(v), freq=v, scale=c(4,0.5),
-                  min.freq = input$freq, max.words=input$max,
-                  colors=sentimentos$col,
-                  random.order=FALSE, rot.per=0.35, 
-                  use.r.layout=FALSE)
-  }else{
-     wordcloud_rep(names(v), freq=v, scale=c(4,0.5),
-                  min.freq = input$freq, max.words=input$max,
-                  colors=brewer.pal(8, "Dark2"),
-                  random.order=FALSE, rot.per=0.35, 
-                  use.r.layout=FALSE) 
+      sentimentos$col=c(                                                # Criando uma nova coluna para objeto "sentimentos"
+        ifelse(sentimentos$sentiment=="Neutro","#666666",               # Se for "Neutro" sera cinza, se nao:
+               ifelse(sentimentos$sentiment=="Positivo","blue","red"))) #Se for "Positivo" recebe azul, se nao é vermelho
+    
+    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+    set.seed(1234)
+    wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
+                  scale=c(4,0.5),                                       # Um vetor de comprimento 2 que indica o range do tamanho das palavras     
+                  min.freq = input$freq,                                # Input informado pelo usuario
+                  max.words=input$max,                                  # Input informado pelo usuario
+                  colors=sentimentos$col,                               # Input informado pelo usuario
+                  random.order=FALSE,                                   # Plot das palavras em ordem aleatória. Se falso, eles serão plotados em frequência decrescente
+                  rot.per=(1-input$horizontal),                         # Proporção de palavras com rotação de 90 graus
+                  use.r.layout=FALSE,                                   # Se falso, o código c ++ é usado para detecção de colisão, caso contrário, R é usado
+                  family = "C",                                         # Seleciona a fonte informada em windowsFonts no inicio do documento
+                  font = 2)                                             # 1:default, 2:negrito, 3:italico, 4:negrito+italico
+
+#Se a analise de sentimentos nao for selecionada  
+    }else{
+    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+      set.seed(1234)
+     wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
+                   scale=c(4,0.5),                                      # Um vetor de comprimento 2 que indica o range do tamanho das palavras   
+                   min.freq = input$freq,                               # Input informado pelo usuario
+                   max.words=input$max,                                 # Input informado pelo usuario
+                   colors=c("#dd003f","#002637","#0bdc99","#00bac5","#ff8947","#c20037","#00a2ab")%>%  #Cores desejadas
+                     rev(),                                                        #Altera a ordem que as cores participarao da figura
+                   random.order=FALSE,                                  # Plot das palavras em ordem aleatória. Se falso, eles serão plotados em frequência decrescente
+                   rot.per=(1-input$horizontal),                        # Proporção de palavras com rotação de 90 graus
+                   use.r.layout=FALSE,
+                   family = "C",                                        # Seleciona a fonte informada em windowsFonts no inicio do documento 
+                   font = 2)                                            # 1:default, 2:negrito, 3:italico, 4:negrito+italico
     }
     
-  })
+  })                                                                    # Encerra o renderPlot({})
   
-    # output$downloadPlot<-downloadHandler(
-    #     filename = function() {
-    #       paste('plot', '.png', sep='')
-    #     },
-    #     content=function(file){
-    #       png(file)
-    #       print(wordcloud_rep)
-    #       dev.off()
-    #     },
-    #     contentType='image/png')
 }
 
-# Create Shiny app ----
+#Cria o aplicativo Shinny 
 shinyApp(ui, server)
 
 
@@ -418,3 +499,138 @@ Na opção "**Marque se deseja usar cor para sentimentos**" a cor da nuvem é ba
 **Importante**: Para utilizar a transformação tf-idf em conjunto com a remoção de sufixos, o procedimento deve ser feito na ordem: 
 
     Text Stemming > tf-idf
+
+<!-- Frequências {data-orientation=rows} -->
+<!-- =====================================      -->
+
+<!-- Row {data-height=600} -->
+<!-- ------------------------------------- -->
+
+<!-- ### Tabela de frequência das palavras do documento -->
+
+<!-- ```{r} -->
+
+<!-- ui <- fluidPage( -->
+<!--   # Application title -->
+<!--   titlePanel("Frequência"), -->
+
+<!--   sidebarLayout( -->
+<!--     # Sidebar with a slider and selection inputs -->
+<!--     sidebarPanel( -->
+
+<!--       # Input: Select separator ---- -->
+<!--       radioButtons("sep", "Separador", -->
+<!--                    choices = c(Comma = ",", -->
+<!--                                Semicolon = ";", -->
+<!--                                Tab = "\t"), -->
+<!--                    selected = ","), -->
+<!--       fileInput("file2", "Escolha o arquivo no formato CSV", -->
+<!--                 multiple = TRUE, -->
+<!--                 accept = c("text/csv", -->
+<!--                          "text/comma-separated-values,text/plain", -->
+<!--                          ".csv")), -->
+<!--       actionButton("update", "Atualizar tabela"), -->
+<!--       # Copy the line below to make a text input box -->
+<!--   textInput("text", label = h3("Removendo palavras"), value = "inserir stopwords de acordo com instrução"), -->
+<!--       hr(), -->
+<!--       # sliderInput("freq", -->
+<!--       #             "Frequência minima:", -->
+<!--       #             min = 1,  max = 50, value = 15), -->
+<!--       # sliderInput("max", -->
+<!--       #             "Número máximo de palavras na nuvem:", -->
+<!--       #             min = 1,  max = 300,  value = 100), -->
+<!--   #ngrams: (ligado) -->
+<!--       sliderInput("nngrams", -->
+<!--                   "Número de sequências de palavras", -->
+<!--                   min = 1,  max = 5,  value = 1), -->
+<!--       # Input: Checkbox if file has header ---- -->
+<!--       checkboxInput("header", "Marque se a base possuir cabeçalho", TRUE), -->
+<!--       # checkboxInput("cor", "Marque se deseja usar cor para sentimentos", TRUE), -->
+<!--       checkboxInput("textStemming", "Marque se deseja usar 'Text Steamming' (remover sufixos)", F) -->
+<!--   # ,   checkboxInput("tf_idf", "Marque se deseja usar a transformação tf-idf", F) -->
+<!--   #,downloadButton("downloadPlot", "Download") -->
+<!--     ), -->
+
+
+<!--     # Show Word Cloud -->
+<!--     mainPanel( -->
+<!--       dataTableOutput("table"), -->
+<!--       tags$br(), -->
+<!--       tags$br(), -->
+<!--       downloadButton("downloadtable", "Download the table"), -->
+<!--    tags$br(), -->
+<!--    tags$hr() -->
+<!--     ) -->
+<!--   ) -->
+<!-- ) -->
+
+<!-- server <- function(input, output, session) { -->
+<!--   # Define a reactive expression for the document term matrix -->
+<!--   terms <- reactive({ -->
+
+
+<!--     df <- read.csv(input$file2$datapath, -->
+<!--              header = input$header, -->
+<!--              sep = input$sep,encoding = "UTF-8") -->
+
+<!--     names(df)=c("V1","V2") -->
+
+<!--     #Remover linhas duplicadas: -->
+<!--     df=df%>% -->
+<!--       distinct(V2,V1,keep_all=T) -->
+
+
+<!--     #Organizando base de dados: -->
+<!--     df=t(apply(data.frame(df),1,cleanTweets)) -->
+<!--     df=as.data.frame(df[,2]) -->
+<!--     df=na.omit(df) -->
+
+<!--     # Change when the "update" button is pressed... -->
+<!--     input$update -->
+<!--         # ...but not for anything else -->
+<!--     isolate({ -->
+<!--       withProgress({ -->
+<!--         setProgress(message = "Processando tabela...") -->
+<!--         excludeWords=input$text -->
+<!--         nngrams=input$nngrams -->
+<!--         # tf_idf=input$tf_idf -->
+<!--         tf_idf=F -->
+<!--         textStemming=input$textStemming -->
+<!--         excludeWords=as.vector(str_split(excludeWords, fixed(','))[[1]]) -->
+<!--         getTermMatrix(df,excludeWords,ngrams=nngrams,tf_idf=tf_idf,textStemming=textStemming) -->
+<!--       }) -->
+<!--     }) -->
+<!--   }) -->
+
+<!--   # Make the wordcloud drawing predictable during a session -->
+<!--   datatable_rep <- repeatable(datatable) -->
+
+<!--   output$table <- renderDataTable({ -->
+<!--     v <- terms() -->
+<!--     set.seed(1234) -->
+<!--      d <- data.frame(words = names(v),freq=v) -->
+<!--   datatable_rep(d,rownames=F) -->
+
+<!--   }) -->
+
+<!--   output$downloadtable <- downloadHandler( -->
+<!--   filename = function() { -->
+<!--     paste('stats', '.csv', sep='') -->
+<!--   }, -->
+<!--   content = function(file) { -->
+<!--     v <- terms() -->
+<!--     set.seed(1234) -->
+<!--     df2 <- data.frame(words = names(v),freq=v) -->
+
+<!--     write.csv(df2, file,row.names = F) -->
+<!--   } -->
+<!-- ) -->
+
+
+<!-- } -->
+
+<!-- # Create Shiny app ---- -->
+<!-- shinyApp(ui, server) -->
+
+<!-- ``` -->
+
