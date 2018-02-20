@@ -8,6 +8,43 @@ output:
     toc_float: true
 ---
 
+# Aplicativo para construir Wordcloud
+
+Crie sua própria wordcloud!
+
+![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny4.png?raw=true)
+
+Link do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud
+
+# Motivação para o aplicativo
+
+Inicialmente uma função foi desenvolvida com finalidade de se criar nuvens de palavras em conjunto com técnicas de textmining de forma dinâmica, o nome da função é `wordcloud_sentiment()` e seu código e os parâmetros para seu uso podem ser conferidos no arquivo `wordcloud_sentiment.R`.
+
+Com essa função foi possível que a criação de nuvens de palavras com técnicas de textmining se tornasse uma tarefa mais ágil, porém o conhecimento prévio de R para sua implementação seria recomendado caso necessite de alguma manutenção. Diante disto a ideia de uma abordagem mais interativa mostrou-se interessante, a seguir é possível conferir como foi sua implementação.
+
+# Pacotes utilizados:
+
+Os pacotes utilizados incluindo algumas referências:
+
+  * `flexdashboard`: Pacote para gerar o aplicativo como dashboard ( [manual do pacote](https://rmarkdown.rstudio.com/flexdashboard/) )
+  * `stringr`:       Pacote para manipulação de strings ([bom manual para manipular strings](http://material.curso-r.com/stringr/)  )   
+  * `dplyr`:         Pacote para manipulação de dados ([Cheat Sheet para Data Wrangling](http://tidy.ws/29i5Kq))                       
+  * `tm`:            Pacote de para text mining ([manual do CRAN](http://tidy.ws/29i5Lr))                       
+  * `wordcloud`:     Pacote para nuvem de palavras ([bom manual para text mining, wordcloud e sentimentos](http://tidy.ws/29i5UO))       
+  * `readxl`:        Pacote para leitura de dados Excel ([github tidyverse](https://github.com/tidyverse/readxl) )        
+  * `tidytext`:      Manipulação de textos ([e-book tidytextmining](https://www.tidytextmining.com/))             
+  * `reshape2`:      Manipulação de dados ( [github do hadley](https://github.com/hadley/reshape) )          
+  * `lexiconPT`:     Importar palavras de sentimentos ( [CRAN](http://tidy.ws/29i5QU)     )                  
+  * `memoise`:       Cache resultados de uma função ([github memoise](https://github.com/r-lib/memoise))            
+  * `SnowballC`:     Para steamming ([manual do CRAN ](http://tidy.ws/29i61a))                       
+  * `purrr`:         Ferramentas de programação funcional ([cheat Sheet para funcoes apply](http://tidy.ws/29i5WN )) 
+  * `DT`:            Renderizar tabela ( [manual do pacote](https://rstudio.github.io/DT/)  )             
+  * `ngram`:         Busca por sequencias de palavras ([guia para ngram no R](http://tidy.ws/29i607)   )                    
+
+# Instalando os pacotes
+
+A instalação de todos esses pacotes pode ser realizada em apenas 1 passo, para mais informações consultar o documento `install_packages.R` e seguir as instruções de instalação 
+
 # Criando dashboards
 
 Apesar de se tratar de um aplicativo shiny, seu layout foi todo configurado com o auxílio do pacote [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/) que possibilita uma boa apresentação. 
@@ -51,35 +88,6 @@ Permite que o usuário do R crie apps web utilizando somente a própria linguage
 
 Para aplicativos definidos dessa maneira, o arquivo `server.R` deve retornar a função do servidor e o arquivo `ui.R` deve retornar o objeto UI. Em outras palavras, um é responsável por captar do usuário os parâmetros que serão aplicados no servidor e retornar para o usuário.
 
-# Motivação para o aplicativo
-
-Inicialmente uma função foi desenvolvida com finalidade de se criar nuvens de palavras em conjunto com técnicas de textmining de forma dinâmica, o nome da função é `wordcloud_sentiment()` e seu código e os parâmetros para seu uso podem ser conferidos no arquivo `wordcloud_sentiment.R`.
-
-Com essa função foi possível que a criação de nuvens de palavras com técnicas de textmining se tornasse uma tarefa mais ágil, porém o conhecimento prévio de R para sua implementação seria recomendado caso necessite de alguma manutenção. Diante disto a ideia de uma abordagem mais interativa mostrou-se interessante, a seguir é possível conferir como foi sua implementação.
-
-
-# Pacotes utilizados:
-
-Os pacotes utilizados incluindo algumas referências:
-
-  * `flexdashboard`: Pacote para gerar o aplicativo como dashboard ( [manual do pacote](https://rmarkdown.rstudio.com/flexdashboard/) )
-  * `stringr`:       Pacote para manipulação de strings ([bom manual para manipular strings](http://material.curso-r.com/stringr/)  )      
-  * `dplyr`:         Pacote para manipulação de dados ([Cheat Sheet para Data Wrangling](http://tidy.ws/29i5Kq))                       
-  * `tm`:            Pacote de para text mining ([manual do CRAN](http://tidy.ws/29i5Lr))                       
-  * `wordcloud`:     Pacote para nuvem de palavras ([bom manual para text mining, wordcloud e sentimentos](http://tidy.ws/29i5UO))                  
-  * `readxl`:        Pacote para leitura de dados Excel ([github tidyverse](https://github.com/tidyverse/readxl) )        
-  * `tidytext`:      Manipulação de textos ([e-book tidytextmining](https://www.tidytextmining.com/))             
-  * `reshape2`:      Manipulação de dados ( [github do hadley](https://github.com/hadley/reshape) )          
-  * `lexiconPT`:     Importar palavras de sentimentos ( [CRAN](http://tidy.ws/29i5QU)     )                  
-  * `memoise`:       Cache resultados de uma função ([github memoise](https://github.com/r-lib/memoise))            
-  * `SnowballC`:     Para steamming ([manual do CRAN ](http://tidy.ws/29i61a))                       
-  * `purrr`:         Ferramentas de programação funcional ([cheat Sheet para funcoes apply](http://tidy.ws/29i5WN )) 
-  * `DT`:            Renderizar tabela ( [manual do pacote](https://rstudio.github.io/DT/)  )             
-  * `ngram`:         Busca por sequencias de palavras ([guia para ngram no R](http://tidy.ws/29i607)   )                    
-
-# Instalando os pacotes
-
-A instalação de todos esses pacotes pode ser realizada em apenas 1 passo, para mais informações consultar o documento `install_packages.R` e seguir as instruções de instalação 
 
 # Criando aplicativos a partir de exemplos
 
@@ -115,7 +123,7 @@ Diversos links como o Shiny User Showcase, que contém um conjunto inspirador de
   * [Curso-r Aula 10 Shiny](http://curso-r.github.io/posts/aula10.html)
 
 
-# Utilizando o aplicativo
+# Disponibilizando o aplicativo
 
 A página [https://www.shinyapps.io/](https://www.shinyapps.io/) possibilita implementar suas aplicações Shiny na Web em alguns minutos, não precisando de um servidor próprio ou saber como configurar um firewall para gerenciar seu aplicativo na nuvem
 
