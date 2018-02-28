@@ -1,13 +1,3 @@
----
-title: "Criando aplicativos via Shiny do Rstudio"
-author: "Rafael Teixeira e Fellipe Gomes"
-date: "9 de fevereiro de 2018"
-output: 
-  html_document:
-    toc: true
-    toc_float: true
----
-
 # Aplicativo para construir Wordcloud
 
 Crie sua própria wordcloud!
