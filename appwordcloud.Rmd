@@ -535,7 +535,7 @@ server <- function(input, output, session) {                # Funcao do servidor
         ifelse(sentimentos$sentiment=="Neutro","#666666",               # Se for "Neutro" sera cinza, se nao:
                ifelse(sentimentos$sentiment=="Positivo","blue","red"))) #Se for "Positivo" recebe azul, se nao é vermelho
     
-    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+    par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
     set.seed(1234)
     wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
                   scale=c(4,0.5),                                       # Um vetor de comprimento 2 que indica o range do tamanho das palavras     
@@ -550,7 +550,7 @@ server <- function(input, output, session) {                # Funcao do servidor
 
 #Se a analise de sentimentos nao for selecionada  
     }else{
-    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+    par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
       set.seed(1234)
      wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
                    scale=c(4,0.5),                                      # Um vetor de comprimento 2 que indica o range do tamanho das palavras   
