@@ -4,20 +4,24 @@ Crie sua própria wordcloud!
 
 ![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny4.png?raw=true)
 
-Link do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud
+Link do aplicativo 1 :  http://dtpapp.shinyapps.io/appwordcloud (Input com uma coluna)
+
+Link do aplicativo 2 :  http://dtpapp.shinyapps.io/appwordcloud (Input com duas colunas para remover linhas repetidas de mesmo usuario)
 
 Esta paste conta com os seguintes arquivos:
 
 Base de dados:
  - social-searcher(23) meu inss.csv    - base obtida através do [social searcher](https://www.social-searcher.com/)
- - base.csv                            - exemplo de base de dados como input do aplicativo (obs.: codificação UTF-8)  
+ - base.csv                            - exemplo de base de dados como input do aplicativo 1 (obs.: codificação UTF-8)
+ - base2.csv                           - exemplo de base de dados como input do aplicativo 2 (obs.: codificação UTF-8)
 
 Complementos:
  - wordcloud_sentiment.R - Função criada para gerar nuvens de palavras com tecnicas textmining de maneira simples e facil
  - install_packages.R - Script para auxiliar na instalação dos pacotes necessários para rodar o aplicativo
   
 Código do aplicativo:
- - appwordcloud.Rmd
+ - appwordcloud.Rmd (Input com uma coluna)
+ - app2wordcloud.Rmd (Input com duas colunas para remover linhas repetidas de mesmo usuario)
 
 # Motivação para o aplicativo
 
