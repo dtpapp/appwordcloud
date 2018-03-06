@@ -6,7 +6,7 @@ Crie sua própria wordcloud!
 
 Link do aplicativo 1 :  http://dtpapp.shinyapps.io/appwordcloud (Input com uma coluna)
 
-Link do aplicativo 2 :  http://dtpapp.shinyapps.io/appwordcloud (Input com duas colunas para remover linhas repetidas de mesmo usuario)
+Link do aplicativo 2 :  http://dtpapp.shinyapps.io/app2wordcloud (Input com duas colunas para remover linhas repetidas de mesmo usuario)
 
 Esta paste conta com os seguintes arquivos:
 
