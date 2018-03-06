@@ -4,9 +4,9 @@ Crie sua própria wordcloud!
 
 ![](https://github.com/dtpapp/appwordcloud/blob/master/img/shiny4.png?raw=true)
 
-Link 1 do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud (input de base com duas colunas)
+Link 1 do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud (input de base com uma coluna)
 
-Link 2 do aplicativo:  http://dtpapp.shinyapps.io/app2wordcloud (input de base com uma coluna)
+Link 2 do aplicativo:  http://dtpapp.shinyapps.io/app2wordcloud (input de base com duas colunas)
 
 Esta paste conta com os seguintes arquivos:
 
