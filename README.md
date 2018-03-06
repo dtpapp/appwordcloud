@@ -6,7 +6,7 @@ Crie sua própria wordcloud!
 
 Link 1 do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud (input de base com duas colunas)
 
-Link 2 do aplicativo:  http://dtpapp.shinyapps.io/appwordcloud (input de base com uma coluna)
+Link 2 do aplicativo:  http://dtpapp.shinyapps.io/app2wordcloud (input de base com uma coluna)
 
 Esta paste conta com os seguintes arquivos:
 
