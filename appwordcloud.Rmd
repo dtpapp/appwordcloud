@@ -317,7 +317,7 @@ ui <- fluidPage(                                                      # Funçõe
 server <- function(input, output, session) {                # Funcao do servidor que recebe o imput$ e retorna o output$              
   
   terms <- reactive({                                       # Definir uma expressão reativa para o do documento
-
+set.seed(1234) 
     req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
     df <- read.csv(input$file1$datapath,                    # Leitura da base de dados com os inputs obtidos em ui
              header = input$header,
@@ -356,8 +356,9 @@ server <- function(input, output, session) {                # Funcao do servidor
   datatable_rep <- repeatable(datatable)                                 #Uma versao repetitiva da função que foi informada
 
     output$plot <- renderPlot({                                          # Gerando o output$plot usado em  mainPanel(plotOutput("plot")) no UI
+    set.seed(1234) 
     v <- terms()                                                         # Obtendo o resultado da função global "getTermMatrix()"
-    set.seed(1234)                                                       # Semente para que a nuvem criada seja sempre a mesma
+                                                          # Semente para que a nuvem criada seja sempre a mesma
     
     d <- data.frame(words = names(v),freq=v)                             # Crie um data.frame com as strings e sua freqüência
 
@@ -374,8 +375,9 @@ server <- function(input, output, session) {                # Funcao do servidor
     paste('stats', '.csv', sep='')
   },
   content = function(file) {
-    v <- terms()
     set.seed(1234)
+    v <- terms()
+    
     df2 <- data.frame(words = names(v),freq=v)
 
     write.csv(df2, file,row.names = F)
@@ -429,7 +431,7 @@ server <- function(input, output, session) {                # Funcao do servidor
         ifelse(sentimentos$sentiment=="Neutro","#666666",               # Se for "Neutro" sera cinza, se nao:
                ifelse(sentimentos$sentiment=="Positivo","blue","red"))) #Se for "Positivo" recebe azul, se nao é vermelho
     
-    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+    par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
     set.seed(1234)
     req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
     wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
@@ -445,7 +447,7 @@ server <- function(input, output, session) {                # Funcao do servidor
 
 #Se a analise de sentimentos nao for selecionada  
     }else{
-    par(bg="#f2f2f2")                                                   # Define a cor do fundo da figura
+    par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
       set.seed(1234)
       req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
      wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
@@ -483,9 +485,9 @@ server <- function(input, output, session) {                # Funcao do servidor
     content = function(file) {
     png(file, width = 800, height = 800, type='cairo')
 
-      
+    set.seed(1234)                                                       # Semente para que a nuvem criada seja sempre a mesma  
     v <- terms()                                                         # Obtendo o resultado da função global "getTermMatrix()"
-    set.seed(1234)                                                       # Semente para que a nuvem criada seja sempre a mesma
+    
     
     d <- data.frame(words = names(v),freq=v)                             # Crie um data.frame com as strings e sua freqüência
   
@@ -537,6 +539,7 @@ server <- function(input, output, session) {                # Funcao do servidor
     
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
     set.seed(1234)
+    req(input$file1)
     wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
                   scale=c(4,0.5),                                       # Um vetor de comprimento 2 que indica o range do tamanho das palavras     
                   min.freq = input$freq,                                # Input informado pelo usuario
@@ -552,6 +555,7 @@ server <- function(input, output, session) {                # Funcao do servidor
     }else{
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
       set.seed(1234)
+      req(input$file1)
      wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
                    scale=c(4,0.5),                                      # Um vetor de comprimento 2 que indica o range do tamanho das palavras   
                    min.freq = input$freq,                               # Input informado pelo usuario
