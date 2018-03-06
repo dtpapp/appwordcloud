@@ -257,9 +257,9 @@ ui <- fluidPage(                                                      # Funçõe
     sidebarPanel(                                                     # sidebarPanel contem os inputs e o mainPanel contém outputs
 
       
-      # radioButtons("sep", "Separador",                                # Input: Selecionar um item de uma lista
-      #              choices = c(Comma = ",",Semicolon = ";",           # Opcoes de separadores do input em formato csv
-      #                          Tab = "\t"),selected = ","),
+      radioButtons("sep", "Separador",                                # Input: Selecionar um item de uma lista
+                   choices = c(Comma = ",",Semicolon = ";",           # Opcoes de separadores do input em formato csv
+                               Tab = "\t"),selected = ","),
       
       fileInput("file1", "Escolha o arquivo no formato CSV",          # Input: Selecionar um arquivo csv do computador 
                 multiple = TRUE,                                      # Permite carregar mais de um arquivo
@@ -323,17 +323,17 @@ ui <- fluidPage(                                                      # Funçõe
 server <- function(input, output, session) {                # Funcao do servidor que recebe o imput$ e retorna o output$              
   
   terms <- reactive({                                       # Definir uma expressão reativa para o do documento
-set.seed(1234) 
+set.seed(12) 
     req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
     df <- read.csv(input$file1$datapath,                    # Leitura da base de dados com os inputs obtidos em ui
              header = input$header,
-             sep = ";",encoding = "UTF-8")
-     df=df[,1]
-# # Removendo linhas duplicadas:
-#     names(df)=c("V1","V2")                                  # Altera o nome das variaveis da base lida
-#     df=df%>%                                                # Alterando o objeto lido
-#       distinct(V2,V1,keep_all=T)                            # Remove linhas iguais de acordo com o texto em seguida o usuario iguais
-#     df=df[,2]                                               # Seleciona a coluna do texto
+             sep = input$sep,encoding = "UTF-8")
+    df=df[,1:2]
+# Removendo linhas duplicadas:
+    names(df)=c("V1","V2")                                  # Altera o nome das variaveis da base lida
+    df=df%>%                                                # Alterando o objeto lido
+      distinct(V2,V1,keep_all=T)                            # Remove linhas iguais de acordo com o texto em seguida o usuario iguais
+    df=df[,2]                                               # Seleciona a coluna do texto
     df=apply(data.frame(df),1,cleanTweets)                  # Aplica a funcao cleanTweets
 
     
@@ -362,7 +362,7 @@ set.seed(1234)
   datatable_rep <- repeatable(datatable)                                 #Uma versao repetitiva da função que foi informada
 
     output$plot <- renderPlot({                                          # Gerando o output$plot usado em  mainPanel(plotOutput("plot")) no UI
-    set.seed(1234) 
+    set.seed(12) 
     v <- terms()                                                         # Obtendo o resultado da função global "getTermMatrix()"
                                                           # Semente para que a nuvem criada seja sempre a mesma
     
@@ -381,7 +381,7 @@ set.seed(1234)
     paste('stats', '.csv', sep='')
   },
   content = function(file) {
-    set.seed(1234)
+    set.seed(12)
     v <- terms()
     
     df2 <- data.frame(words = names(v),freq=v)
@@ -438,7 +438,7 @@ set.seed(1234)
                ifelse(sentimentos$sentiment=="Positivo","blue","red"))) #Se for "Positivo" recebe azul, se nao é vermelho
     
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
-    set.seed(1234)
+    set.seed(12)
     req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
     wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
                   scale=c(input$scalemax,input$scalemin),                                       # Um vetor de comprimento 2 que indica o range do tamanho das palavras     
@@ -454,7 +454,7 @@ set.seed(1234)
 #Se a analise de sentimentos nao for selecionada  
     }else{
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
-      set.seed(1234)
+      set.seed(12)
       req(input$file1)                                               # Leitura dos dados ficara armazenada no objeto terms
      wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
                    scale=c(input$scalemax,input$scalemin),                                      # Um vetor de comprimento 2 que indica o range do tamanho das palavras   
@@ -491,7 +491,7 @@ set.seed(1234)
     content = function(file) {
     png(file, width = 800, height = 800, type='cairo')
 
-    set.seed(1234)                                                       # Semente para que a nuvem criada seja sempre a mesma  
+    set.seed(12)                                                       # Semente para que a nuvem criada seja sempre a mesma  
     v <- terms()                                                         # Obtendo o resultado da função global "getTermMatrix()"
     
     
@@ -544,7 +544,7 @@ set.seed(1234)
                ifelse(sentimentos$sentiment=="Positivo","blue","red"))) #Se for "Positivo" recebe azul, se nao é vermelho
     
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
-    set.seed(1234)
+    set.seed(12)
     req(input$file1)
     wordcloud_rep(names(v), freq=as.numeric(v),                         # Funcao repetitiva wordcloud, objeto v foi retornado pela funcao global getTermMatrix()
                   scale=c(input$scalemax,input$scalemin),                                       # Um vetor de comprimento 2 que indica o range do tamanho das palavras     
@@ -560,7 +560,7 @@ set.seed(1234)
 #Se a analise de sentimentos nao for selecionada  
     }else{
     par(bg="#d7dee1")                                                   # Define a cor do fundo da figura
-      set.seed(1234)
+      set.seed(12)
       req(input$file1)
      wordcloud_rep(names(v), freq=as.numeric(v),                        # As entradas serao as mesmas mensionadas acima, com excessao da cor
                    scale=c(input$scalemax,input$scalemin),                                      # Um vetor de comprimento 2 que indica o range do tamanho das palavras   
@@ -599,11 +599,12 @@ Column {data-width=110}
 
 **Input da base de dados**
 
-Para dar início a construção da nuvem de palavras selecione o arquivo (em formato csv com codificação UTF-8) que contenha apenas uma coluna em que:
+Para dar início a construção da nuvem de palavras selecione o arquivo (em formato csv com codificação UTF-8) que contenha apenas duas colunas em que:
 
-    * Coluna: texto
+    * Coluna1: usuario
+    * Coluna2: texto
 
-[exemplo de base](https://github.com/dtpapp/appwordcloud/blob/master/base.csv)
+[exemplo de base](https://github.com/dtpapp/appwordcloud/blob/master/base2.csv)
 
 **Stopwords**
 
